@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "optimization-agent"
+version = "0.1.0"
+description = "Smart SDK agent for travel optimization"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# smart-sdk = "^1.0.0"  # Note: This is a placeholder version, commented out for local development
+requests = "^2.31.0"
+httpx = "^0.27.0"
+pydantic = "^2.6.0"
+asyncio = "^3.4.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api" 
