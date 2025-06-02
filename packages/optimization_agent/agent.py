@@ -7,6 +7,10 @@ from smart_sdk.agents import SMARTLLMAgent
 from smart_sdk import CancellationToken, Console
 from smart_sdk.model import AzureOpenAIChatCompletionClient
 from loguru import logger
+import subprocess
+import os
+from pathlib import Path
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -23,6 +27,22 @@ MODEL_CONFIG = {
     "api_version": None,
     "azure_endpoint": None,
     "azure_deployment": None
+}
+
+# MCP Server Configuration
+MCP_SERVERS = {
+    "chase_travel": {
+        "port": 3001,
+        "path": "packages/mcp_servers/chase_travel/server.py"
+    },
+    "safepay_wallet": {
+        "port": 3002,
+        "path": "packages/mcp_servers/safepay_wallet/server.py"
+    },
+    "benefits": {
+        "port": 3003,
+        "path": "packages/mcp_servers/benefits/server.py"
+    }
 }
 
 class ModelClientError(Exception):
@@ -56,35 +76,61 @@ def create_model_client(model_details: Dict[str, Any]) -> AzureOpenAIChatComplet
         }
     )
 
+async def start_mcp_servers() -> None:
+    """Start all MCP servers using UV."""
+    logger.info("Starting MCP servers using UV")
+    
+    # Create UV configuration
+    uv_config = {
+        "servers": [
+            {
+                "name": name,
+                "command": "python",
+                "args": [config["path"]],
+                "env": {
+                    "PORT": str(config["port"])
+                }
+            }
+            for name, config in MCP_SERVERS.items()
+        ]
+    }
+    
+    # Write UV configuration
+    config_path = Path("uv.json")
+    with open(config_path, "w") as f:
+        json.dump(uv_config, f, indent=2)
+    
+    # Start servers using UV
+    try:
+        subprocess.run(["uv", "start"], check=True)
+        logger.info("Successfully started all MCP servers")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to start MCP servers: {str(e)}")
+        raise
+
 async def setup_mcp_servers() -> Any:
     """Set up all MCP server parameters and tools."""
     logger.info("Setting up MCP server parameters")
     
-    # Chase Travel MCP Server
-    chase_travel_server = StdioServerParams(
-        command="python",
-        args=["packages/mcp_servers/chase_travel/server.py"]
-    )
+    # Start servers if not already running
+    await start_mcp_servers()
     
-    # SafePay Wallet MCP Server
-    safepay_wallet_server = StdioServerParams(
-        command="python",
-        args=["packages/mcp_servers/safepay_wallet/server.py"]
-    )
-    
-    # Benefits MCP Server
-    benefits_server = StdioServerParams(
-        command="python",
-        args=["packages/mcp_servers/benefits/server.py"]
-    )
+    # Set up server parameters
+    server_params = {
+        name: StdioServerParams(
+            command="uv",
+            args=["connect", name]
+        )
+        for name in MCP_SERVERS.keys()
+    }
     
     logger.info("Initializing MCP server tools")
-    chase_tools = await mcp_server_tools(chase_travel_server)
-    safepay_tools = await mcp_server_tools(safepay_wallet_server)
-    benefits_tools = await mcp_server_tools(benefits_server)
+    tools = {}
+    for name, params in server_params.items():
+        server_tools = await mcp_server_tools(params)
+        tools.update(server_tools)
     
-    # Combine all tools
-    return {**chase_tools, **safepay_tools, **benefits_tools}
+    return tools
 
 def create_agent(tools: Any) -> SMARTLLMAgent:
     """Create a SMART LLM agent with the given tools."""
@@ -159,6 +205,13 @@ async def main() -> None:
     except Exception as e:
         logger.error(f"Application error: {str(e)}", exc_info=True)
         print(f"An error occurred: {str(e)}")
+    finally:
+        # Clean up UV processes
+        try:
+            subprocess.run(["uv", "stop"], check=True)
+            logger.info("Successfully stopped all MCP servers")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to stop MCP servers: {str(e)}")
 
 if __name__ == "__main__":
     asyncio.run(main()) 

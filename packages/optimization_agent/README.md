@@ -14,7 +14,7 @@ An intelligent agent that helps users maximize their travel rewards and benefits
 - Python 3.9+
 - Smart SDK access
 - Azure OpenAI API access
-- All MCP servers running (Chase Travel, SafePay Wallet, Benefits)
+- UV process manager
 
 ## Setup
 
@@ -29,10 +29,10 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-3. Ensure all MCP servers are running:
-- Chase Travel MCP Server (port 3001)
-- SafePay Wallet MCP Server (port 3002)
-- Benefits MCP Server (port 3003)
+3. Install UV:
+```bash
+pip install uv
+```
 
 ## Usage
 
@@ -42,9 +42,10 @@ python agent.py
 ```
 
 The agent will:
-1. Connect to all MCP servers
-2. Initialize the Smart SDK agent
-3. Start an interactive conversation loop
+1. Start all MCP servers using UV
+2. Connect to the servers
+3. Initialize the Smart SDK agent
+4. Start an interactive conversation loop
 
 ## Response Format
 
