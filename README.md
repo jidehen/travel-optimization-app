@@ -1,63 +1,92 @@
-# Travel Optimization App
+# Travel Optimization Application
 
-A Python-based travel optimization application that uses multiple MCP (Message Control Protocol) servers and a Smart SDK agent to optimize travel experiences.
+A modern travel optimization application that helps users maximize their travel rewards and benefits by connecting to multiple MCP servers.
 
 ## Project Structure
 
 ```
 travel-optimization-app/
 ├── packages/
-│   ├── mcp_servers/
-│   │   ├── chase_travel/        # Chase Travel MCP server
-│   │   ├── safepay_wallet/      # SafePay Wallet MCP server
-│   │   └── benefits/            # Benefits MCP server
-│   ├── optimization_agent/      # Smart SDK agent
-│   └── shared/                  # Shared types and utilities
-├── pyproject.toml               # Python project configuration
-├── docker-compose.yml           # Development environment
+│   ├── mcp_servers/           # MCP servers for different functionalities
+│   │   ├── chase_travel/     # Flight search functionality
+│   │   ├── safepay_wallet/   # Payment methods management
+│   │   └── benefits/         # Card benefits and rewards
+│   ├── optimization_agent/   # Smart agent that connects to MCP servers
+│   └── shared/              # Shared models and utilities
 └── README.md
 ```
 
-## Requirements
+## Prerequisites
 
-- Python 3.11+
-- Poetry for dependency management
-- Docker and Docker Compose for development environment
+- Python 3.12+
+- UV package manager
+- Smart SDK access
+- Azure OpenAI API access
 
 ## Setup
 
-1. Install Poetry:
+1. Install UV:
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+pip install uv
 ```
 
-2. Install dependencies:
+2. Create and activate virtual environment:
 ```bash
-poetry install
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-3. Start the development environment:
+3. Install dependencies:
 ```bash
-docker-compose up
+uv pip install -e .
+```
+
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+## Running the Application
+
+1. Start the MCP servers:
+```bash
+# Chase Travel MCP
+cd packages/mcp_servers/chase_travel
+uv run python -m uvicorn chase_travel.server:app --port 8001
+
+# SafePay Wallet MCP
+cd packages/mcp_servers/safepay_wallet
+uv run python -m uvicorn safepay_wallet.server:app --port 8002
+
+# Benefits MCP
+cd packages/mcp_servers/benefits
+uv run python -m uvicorn benefits.server:app --port 8003
+```
+
+2. Run the optimization agent:
+```bash
+cd packages/optimization_agent
+uv run python agent.py
 ```
 
 ## Development
 
-Each MCP server is designed to be independently deployable and can be developed separately. The project uses Poetry workspaces to manage dependencies across packages.
+Each MCP server is designed to be independently deployable and can be developed separately. The project uses UV for dependency management across packages.
 
-### MCP Servers
+### Health Checks
 
-- Chase Travel MCP: Port 8001
-- SafePay Wallet MCP: Port 8002
-- Benefits MCP: Port 8003
+Each MCP server has a health check endpoint:
+- Chase Travel: http://localhost:8001/health
+- SafePay Wallet: http://localhost:8002/health
+- Benefits: http://localhost:8003/health
 
-### Smart SDK Agent
+### Logging
 
-The optimization agent uses the Smart SDK to coordinate between the MCP servers and optimize travel experiences.
+Logs are stored in the `logs` directory for each component:
+- `logs/chase_travel_mcp.log`
+- `logs/safepay_wallet_mcp.log`
+- `logs/benefits_mcp.log`
+- `logs/optimization_agent.log`
 
-## Notes
-
-- The Smart SDK is an internal tool and will not be available for testing on personal machines
-- Each MCP server is designed to be independently deployable
-- Redis is used for caching and state management
-- Type hints are used throughout the codebase 
+Logs are rotated daily and retained for 7 days. 

@@ -1,23 +1,22 @@
-[tool.poetry]
+[project]
 name = "travel-optimization-app"
 version = "0.1.0"
 description = "Travel optimization application with multiple MCP servers"
-authors = ["Your Name <your.email@example.com>"]
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "^3.11"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "chase-travel-mcp @ file:///packages/mcp_servers/chase_travel",
+    "safepay-wallet-mcp @ file:///packages/mcp_servers/safepay_wallet",
+    "benefits-mcp @ file:///packages/mcp_servers/benefits",
+    "optimization-agent @ file:///packages/optimization_agent",
+    "shared @ file:///packages/shared"
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.workspace]
-optional = true
-
-[tool.poetry.group.workspace.dependencies]
-chase-travel-mcp = {path = "packages/mcp_servers/chase_travel"}
-safepay-wallet-mcp = {path = "packages/mcp_servers/safepay_wallet"}
-benefits-mcp = {path = "packages/mcp_servers/benefits"}
-optimization-agent = {path = "packages/optimization_agent"}
-shared = {path = "packages/shared"} 
+[tool.uv]
+python = "3.12" 
