@@ -4,19 +4,19 @@ This directory contains three independent MCP (Model Context Protocol) servers t
 
 ## Servers
 
-### 1. Chase Travel MCP Server (Port 3001)
+### 1. Chase Travel MCP Server (Port 8001)
 - **Purpose**: Flight search functionality
 - **Tools**:
   - `search_flights`: Search for available flights
   - `get_flight_details`: Get detailed flight information
 
-### 2. SafePay Wallet MCP Server (Port 3002)
+### 2. SafePay Wallet MCP Server (Port 8002)
 - **Purpose**: Payment methods management
 - **Tools**:
   - `get_payment_methods`: Retrieve user's payment methods
   - `add_payment_method`: Add a new payment method
 
-### 3. Benefits MCP Server (Port 3003)
+### 3. Benefits MCP Server (Port 8003)
 - **Purpose**: Card benefits and rewards
 - **Tools**:
   - `get_benefits`: Get available card benefits
@@ -31,8 +31,8 @@ Each server is independently runnable and has its own:
 - Health checks
 
 ### Prerequisites
-- Python 3.9+
-- Docker and Docker Compose
+- Python 3.12+
+- UV process manager
 
 ### Setup
 
@@ -60,57 +60,26 @@ cp .env.example .env
 
 ### Running Locally
 
-1. Start all servers:
-```bash
-docker-compose up
-```
-
-2. Start individual servers:
+Start individual servers:
 ```bash
 # Chase Travel MCP
 cd chase_travel
-python server.py
+uv run python -m uvicorn chase_travel.server:app --port 8001
 
 # SafePay Wallet MCP
 cd safepay_wallet
-python server.py
+uv run python -m uvicorn safepay_wallet.server:app --port 8002
 
 # Benefits MCP
 cd benefits
-python server.py
+uv run python -m uvicorn benefits.server:app --port 8003
 ```
 
 ### Health Checks
 Each server has a health check endpoint:
-- Chase Travel: http://localhost:3001/health
-- SafePay Wallet: http://localhost:3002/health
-- Benefits: http://localhost:3003/health
-
-## Docker Support
-
-Each server is containerized and can be run independently or together using Docker Compose.
-
-### Building Images
-```bash
-# Build all images
-docker-compose build
-
-# Build individual images
-docker-compose build chase-travel-mcp
-docker-compose build safepay-wallet-mcp
-docker-compose build benefits-mcp
-```
-
-### Running Containers
-```bash
-# Run all services
-docker-compose up
-
-# Run individual services
-docker-compose up chase-travel-mcp
-docker-compose up safepay-wallet-mcp
-docker-compose up benefits-mcp
-```
+- Chase Travel: http://localhost:8001/health
+- SafePay Wallet: http://localhost:8002/health
+- Benefits: http://localhost:8003/health
 
 ## Future Separation
 

@@ -7,18 +7,8 @@ from smart_sdk.agents import SMARTLLMAgent
 from smart_sdk import CancellationToken, Console
 from smart_sdk.model import AzureOpenAIChatCompletionClient
 from loguru import logger
-import subprocess
-import os
-from pathlib import Path
-import json
 import sys
-import time
-import signal
 from dotenv import load_dotenv
-
-# Add the project root to the Python path
-project_root = Path(__file__).parent.parent.parent
-sys.path.append(str(project_root))
 
 # Load environment variables
 load_dotenv()
@@ -71,67 +61,6 @@ def create_model_client(model_details: Dict[str, Any]) -> AzureOpenAIChatComplet
             "user_sid": DEFAULT_USER_SID
         }
     )
-
-class MCPServerManager:
-    """Manages the lifecycle of MCP servers."""
-    
-    def __init__(self):
-        self.servers = {
-            "chase_travel": {
-                "name": "Chase Travel MCP",
-                "port": 8001,
-                "path": project_root / "packages/mcp_servers/chase_travel"
-            },
-            "safepay_wallet": {
-                "name": "SafePay Wallet MCP",
-                "port": 8002,
-                "path": project_root / "packages/mcp_servers/safepay_wallet"
-            },
-            "benefits": {
-                "name": "Benefits MCP",
-                "port": 8003,
-                "path": project_root / "packages/mcp_servers/benefits"
-            }
-        }
-        self.processes: Dict[str, subprocess.Popen] = {}
-    
-    def start_servers(self) -> None:
-        """Start all MCP servers."""
-        for server_id, server in self.servers.items():
-            try:
-                logger.info(f"Starting {server['name']}...")
-                # Use uv run to start the server
-                process = subprocess.Popen(
-                    ["uv", "run", "--project", str(server["path"]), "python", "-m", "uvicorn", f"{server_id}.server:app", "--port", str(server["port"])],
-                    cwd=str(server["path"]),
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True
-                )
-                self.processes[server_id] = process
-                logger.info(f"{server['name']} started on port {server['port']}")
-            except Exception as e:
-                logger.error(f"Failed to start {server['name']}: {str(e)}")
-                self.stop_servers()
-                raise
-    
-    def stop_servers(self) -> None:
-        """Stop all running MCP servers."""
-        for server_id, process in self.processes.items():
-            try:
-                logger.info(f"Stopping {self.servers[server_id]['name']}...")
-                # Send SIGTERM to the process
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    # If process doesn't terminate gracefully, force kill it
-                    process.kill()
-                logger.info(f"{self.servers[server_id]['name']} stopped")
-            except Exception as e:
-                logger.error(f"Error stopping {self.servers[server_id]['name']}: {str(e)}")
-        
-        self.processes.clear()
 
 def create_agent(tools: Any) -> SMARTLLMAgent:
     """Create a SMART LLM agent with the given tools."""
@@ -199,18 +128,28 @@ async def main() -> None:
     """Main entry point for the application."""
     try:
         logger.info("Starting application")
-        server_manager = MCPServerManager()
-        server_manager.start_servers()
         
         # Initialize MCP server tools
         tools = {}
-        for server_id, server in server_manager.servers.items():
-            server_params = StdioServerParams(
-                command="uv",
-                args=["run", "--project", str(server["path"]), "python", "-m", "uvicorn", f"{server_id}.server:app", "--port", str(server["port"])]
-            )
-            server_tools = await mcp_server_tools(server_params)
-            tools.update(server_tools)
+        server_params = {
+            "chase_travel": StdioServerParams(command="uv", args=["run", "chase-travel-mcp"]),
+            "safepay_wallet": StdioServerParams(command="uv", args=["run", "safepay-wallet-mcp"]),
+            "benefits": StdioServerParams(command="uv", args=["run", "benefits-mcp"])
+        }
+        
+        # Try to connect to each server independently
+        for server_id, params in server_params.items():
+            try:
+                logger.info(f"Attempting to connect to {server_id} server")
+                server_tools = await mcp_server_tools(params)
+                tools.update(server_tools)
+                logger.info(f"Successfully connected to {server_id} server")
+            except Exception as e:
+                logger.warning(f"Could not connect to {server_id} server: {str(e)}")
+                logger.info(f"Continuing without {server_id} server tools")
+        
+        if not tools:
+            logger.warning("No MCP servers were available. The agent will run with limited functionality.")
         
         agent = create_agent(tools)
         await run_conversation_loop(agent)
@@ -218,10 +157,6 @@ async def main() -> None:
     except Exception as e:
         logger.error(f"Application error: {str(e)}", exc_info=True)
         print(f"An error occurred: {str(e)}")
-    finally:
-        # Clean up UV processes
-        server_manager.stop_servers()
-        logger.info("Successfully stopped all MCP servers")
 
 if __name__ == "__main__":
     asyncio.run(main()) 

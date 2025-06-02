@@ -11,7 +11,7 @@ An intelligent agent that helps users maximize their travel rewards and benefits
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.12+
 - Smart SDK access
 - Azure OpenAI API access
 - UV process manager
@@ -20,7 +20,7 @@ An intelligent agent that helps users maximize their travel rewards and benefits
 
 1. Install dependencies:
 ```bash
-pip install -r requirements.txt
+uv pip install -e .
 ```
 
 2. Set up environment variables:
@@ -29,23 +29,17 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-3. Install UV:
-```bash
-pip install uv
-```
-
 ## Usage
 
 Run the agent:
 ```bash
-python agent.py
+uv run python agent.py
 ```
 
 The agent will:
-1. Start all MCP servers using UV
-2. Connect to the servers
-3. Initialize the Smart SDK agent
-4. Start an interactive conversation loop
+1. Connect to the MCP servers
+2. Initialize the Smart SDK agent
+3. Start an interactive conversation loop
 
 ## Response Format
 
