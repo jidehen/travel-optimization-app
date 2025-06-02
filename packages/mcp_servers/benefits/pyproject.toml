@@ -36,5 +36,5 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.uv]
-python = "3.9" 
+[tool.uv.python]
+version = "3.9" 
