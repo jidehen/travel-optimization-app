@@ -6,9 +6,7 @@ build-backend = "hatchling.build"
 name = "chase-travel-mcp"
 version = "0.1.0"
 description = "Chase Travel MCP server for flight search functionality"
-authors = [
-    { name = "Chase Travel Team" }
-]
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.109.0",
@@ -17,7 +15,8 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "loguru>=0.7.2",
     "httpx>=0.26.0",
-    "mcp>=0.1.0"
+    "mcp>=0.1.0",
+    "shared @ file:///packages/shared"
 ]
 
 [project.scripts]
@@ -36,5 +35,5 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.uv.python]
-version = "3.12" 
+[tool.uv]
+python = "3.12" 

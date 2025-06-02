@@ -2,9 +2,7 @@
 name = "travel-optimization-app"
 version = "0.1.0"
 description = "Travel optimization application with multiple MCP servers"
-authors = [
-    {name = "Your Name", email = "your.email@example.com"}
-]
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "chase-travel-mcp @ file:///packages/mcp_servers/chase_travel",
