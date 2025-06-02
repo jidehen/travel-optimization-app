@@ -33,7 +33,4 @@ ignore = []
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto"
-
-[tool.uv]
-python = "3.12" 
+line-ending = "auto" 
