@@ -5,10 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "benefits-mcp"
 version = "0.1.0"
-description = "Benefits MCP Server for card benefits functionality"
+description = "Benefits MCP server for card benefits and rewards functionality"
 authors = [
     { name = "Benefits Team" }
 ]
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
@@ -18,7 +19,6 @@ dependencies = [
     "httpx>=0.26.0",
     "mcp>=0.1.0"
 ]
-requires-python = ">=3.9"
 
 [project.scripts]
 benefits-mcp = "benefits.server:main"
@@ -34,4 +34,7 @@ ignore = []
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto" 
+line-ending = "auto"
+
+[tool.uv]
+python = "3.9" 

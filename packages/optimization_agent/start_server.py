@@ -1,8 +1,18 @@
 import argparse
 import json
 import subprocess
+import sys
+import os
 from pathlib import Path
 from loguru import logger
+
+# Configure logging
+logger.add(
+    "logs/server.log",
+    rotation="1 day",
+    retention="7 days",
+    level="INFO"
+)
 
 # MCP Server Configuration
 MCP_SERVERS = {
@@ -47,22 +57,42 @@ def start_server(server_name: str) -> None:
     """Start a single MCP server using UV."""
     try:
         create_uv_config(server_name)
-        subprocess.run(["uv", "start"], check=True)
+        # Use uv run instead of uv start
+        subprocess.run(["uv", "run", server_name], check=True)
         logger.info(f"Successfully started {server_name} server")
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to start {server_name} server: {str(e)}")
         raise
 
+def stop_server(server_name: str) -> None:
+    """Stop a running MCP server using UV."""
+    try:
+        # Use uv kill instead of uv stop
+        subprocess.run(["uv", "kill", server_name], check=True)
+        logger.info(f"Successfully stopped {server_name} server")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to stop {server_name} server: {str(e)}")
+        raise
+
 def main():
-    parser = argparse.ArgumentParser(description="Start a single MCP server using UV")
+    parser = argparse.ArgumentParser(description="Manage MCP servers using UV")
+    parser.add_argument(
+        "action",
+        choices=["start", "stop"],
+        help="Action to perform (start or stop)"
+    )
     parser.add_argument(
         "server",
         choices=list(MCP_SERVERS.keys()),
-        help="Name of the server to start"
+        help="Name of the server to manage"
     )
     
     args = parser.parse_args()
-    start_server(args.server)
+    
+    if args.action == "start":
+        start_server(args.server)
+    else:
+        stop_server(args.server)
 
 if __name__ == "__main__":
     main() 

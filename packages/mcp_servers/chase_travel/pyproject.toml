@@ -5,10 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "chase-travel-mcp"
 version = "0.1.0"
-description = "Chase Travel MCP Server for flight search functionality"
+description = "Chase Travel MCP server for flight search functionality"
 authors = [
     { name = "Chase Travel Team" }
 ]
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
@@ -18,7 +19,6 @@ dependencies = [
     "httpx>=0.26.0",
     "mcp>=0.1.0"
 ]
-requires-python = ">=3.9"
 
 [project.scripts]
 chase-travel-mcp = "chase_travel.server:main"
@@ -34,4 +34,7 @@ ignore = []
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto" 
+line-ending = "auto"
+
+[tool.uv]
+python = "3.9" 
