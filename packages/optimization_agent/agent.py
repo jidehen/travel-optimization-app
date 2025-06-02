@@ -201,7 +201,17 @@ async def main() -> None:
         logger.info("Starting application")
         server_manager = MCPServerManager()
         server_manager.start_servers()
-        tools = await setup_mcp_servers()
+        
+        # Initialize MCP server tools
+        tools = {}
+        for server_id, server in server_manager.servers.items():
+            server_params = StdioServerParams(
+                command="uv",
+                args=["run", "--project", str(server["path"]), "python", "-m", "uvicorn", f"{server_id}.server:app", "--port", str(server["port"])]
+            )
+            server_tools = await mcp_server_tools(server_params)
+            tools.update(server_tools)
+        
         agent = create_agent(tools)
         await run_conversation_loop(agent)
                 
