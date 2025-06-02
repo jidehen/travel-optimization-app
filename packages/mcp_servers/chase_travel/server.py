@@ -1,12 +1,13 @@
 import asyncio
 import os
 from typing import Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from mcp import FastMCP, MCPRequest, MCPResponse
-from pydantic import BaseModel
 from dotenv import load_dotenv
+from tools.search_flights import SearchFlightsTool
+from tools.get_flight_details import GetFlightDetailsTool
 
 # Load environment variables
 load_dotenv()
@@ -28,7 +29,34 @@ app.add_middleware(
 )
 
 # Initialize MCP server
-chase_travel_mcp = FastMCP("Chase Travel")
+mcp = FastMCP("Chase Travel")
+
+# Register tools using decorator pattern
+@mcp.tool("search_flights")
+async def search_flights(request: MCPRequest) -> MCPResponse:
+    """Search for available flights based on criteria."""
+    try:
+        tool = SearchFlightsTool()
+        result = await tool.execute(None, **request.parameters)
+        return MCPResponse(status="success", data=result)
+    except ValueError as e:
+        return MCPResponse(status="error", error=str(e))
+    except Exception as e:
+        logger.error(f"Error in flight search: {str(e)}")
+        return MCPResponse(status="error", error="Internal server error")
+
+@mcp.tool("get_flight_details")
+async def get_flight_details(request: MCPRequest) -> MCPResponse:
+    """Get detailed information about a specific flight."""
+    try:
+        tool = GetFlightDetailsTool()
+        result = await tool.execute(None, **request.parameters)
+        return MCPResponse(status="success", data=result)
+    except ValueError as e:
+        return MCPResponse(status="error", error=str(e))
+    except Exception as e:
+        logger.error(f"Error getting flight details: {str(e)}")
+        return MCPResponse(status="error", error="Internal server error")
 
 # Health check endpoint
 @app.get("/health")
@@ -36,89 +64,8 @@ async def health_check() -> Dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy", "service": "chase-travel-mcp"}
 
-# MCP tool for flight search
-@chase_travel_mcp.tool("search_flights")
-async def search_flights(request: MCPRequest) -> MCPResponse:
-    """
-    Search for available flights based on criteria.
-    
-    Args:
-        request: MCP request containing search parameters
-        
-    Returns:
-        MCP response with flight search results
-    """
-    try:
-        # Extract search parameters from request
-        params = request.parameters
-        
-        # TODO: Implement actual flight search logic
-        # This is a placeholder response
-        response_data = {
-            "flights": [],
-            "total_results": 0,
-            "search_id": "search_123"
-        }
-        
-        return MCPResponse(
-            status="success",
-            data=response_data
-        )
-    except Exception as e:
-        logger.error(f"Error in flight search: {str(e)}")
-        return MCPResponse(
-            status="error",
-            error=str(e)
-        )
-
-# MCP tool for flight details
-@chase_travel_mcp.tool("get_flight_details")
-async def get_flight_details(request: MCPRequest) -> MCPResponse:
-    """
-    Get detailed information about a specific flight.
-    
-    Args:
-        request: MCP request containing flight ID
-        
-    Returns:
-        MCP response with flight details
-    """
-    try:
-        # Extract flight ID from request
-        flight_id = request.parameters.get("flight_id")
-        
-        if not flight_id:
-            raise HTTPException(status_code=400, detail="Flight ID is required")
-        
-        # TODO: Implement actual flight details retrieval
-        # This is a placeholder response
-        response_data = {
-            "flight_number": "AA100",
-            "airline": {"code": "AA", "name": "American Airlines"},
-            "origin": {"code": "JFK", "name": "JFK International"},
-            "destination": {"code": "LAX", "name": "Los Angeles International"},
-            "departure_time": "2024-03-15T10:00:00Z",
-            "arrival_time": "2024-03-15T13:00:00Z",
-            "duration": 360,
-            "aircraft_type": "B777",
-            "cabin_class": "business",
-            "price": 500.0,
-            "currency": "USD"
-        }
-        
-        return MCPResponse(
-            status="success",
-            data=response_data
-        )
-    except Exception as e:
-        logger.error(f"Error getting flight details: {str(e)}")
-        return MCPResponse(
-            status="error",
-            error=str(e)
-        )
-
 # Mount MCP server to FastAPI app
-app.mount("/mcp", chase_travel_mcp.app)
+app.mount("/mcp", mcp.app)
 
 async def main():
     """Main entry point for the server."""
