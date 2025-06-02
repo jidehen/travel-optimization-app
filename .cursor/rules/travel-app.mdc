@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This is what we are building for context before we start:
+
+Travel Agent Optimization App - Python Development Guide (CLI Version)
+
+🌟 Project Overview & Context
+What We're Building
+A sophisticated AI-powered travel optimization system that automatically finds the best combination of flights and payment methods to maximize customer rewards and savings. The system uses multiple specialized MCP (Model Context Protocol) servers orchestrated by an intelligent agent to deliver personalized travel recommendations via CLI interaction.
+Business Problem We're Solving
+Current Pain Point: Customers with multiple Chase credit cards struggle to optimize their travel purchases. They don't know which card to use for which flight to maximize rewards, cashback, or points. This leads to:
+
+Suboptimal reward earning (leaving money on the table)
+Decision paralysis when booking travel
+Poor customer engagement with premium card benefits
+Missed opportunities for Chase to demonstrate card value
+
+Our Solution: An intelligent agent that automatically:
+
+Searches available flights for user's travel needs
+Analyzes user's payment methods and available credit
+Calculates rewards/benefits for each flight+payment combination
+Ranks recommendations by total value (price + rewards optimization)
+Explains the reasoning behind each recommendation
+
+Technical Innovation & Architecture
+🎯 Why This Architecture Matters:
+MCP Protocol Showcase: We're building a cutting-edge implementation of the Model Context Protocol, demonstrating how AI agents can orchestrate multiple specialized services to solve complex optimization problems.
+Domain-Driven Microservices: Each MCP server represents a distinct business domain:
+
+Chase Travel MCP Server: Flight search and travel data
+SafePay Wallet MCP Server: Payment methods and account information
+Benefits MCP Server: Card rewards, multipliers, and benefits
+Optimization MCP Server: Intelligent recommendation engine
+
+Agent Orchestration: A Smart SDK agent coordinates all MCP servers to deliver a unified, intelligent experience that feels like talking to a travel expert who knows your financial products intimately.
+Key Value Propositions
+For Customers:
+
+💰 Maximize Savings: Automatically find flight+payment combinations that provide best total value
+🎯 Personalized Recommendations: Considers your specific cards, credit limits, and preferences
+⚡ Instant Optimization: Complex calculations completed in seconds via natural language
+🧠 Educational: Learn how different cards perform for different purchase types
+
+For Chase Business:
+
+📈 Increased Card Usage: Customers use optimal cards more frequently
+🎖️ Premium Card Justification: Demonstrate tangible value of premium card benefits
+💡 Customer Intelligence: Understand travel patterns and payment preferences
+🔗 Ecosystem Lock-in: Integrate travel and payments for stickier customer relationships
+
+For Technical Teams:
+
+🏗️ MCP Protocol Mastery: Advanced implementation of emerging AI agent standards
+🔧 Microservices Excellence: Clean domain separation with async Python
+🚀 Production Architecture: Designed for scale, monitoring, and team ownership
+🎮 CLI-First Innovation: Focus on agent intelligence over UI complexity
+
+🏗️ Architecture Sophistication:
+
+4 independent MCP servers working in harmony
+Async Python performance with proper error handling
+Production-ready monitoring and observability
+Easy migration path to separate repositories/teams
